@@ -16,7 +16,6 @@ import RamadanTrainingArticle from './pages/RamadanTrainingArticle';
 import OutdoorTrainingArticle from './pages/OutdoorTrainingArticle';
 import ShopPage from './pages/ShopPage';
 import BookingPage from './pages/BookingPage';
-import Gallery from './pages/Gallery';
 import AdminLayout from './pages/admin/AdminLayout';
 import LoginPage from './pages/admin/LoginPage';
 import Dashboard from './pages/admin/Dashboard';
@@ -30,17 +29,16 @@ import BookingsManager from './pages/admin/BookingsManager';
 import UsersManager from './pages/admin/UsersManager';
 import SettingsPage from './pages/admin/SettingsPage';
 import SetupPage from './pages/admin/SetupPage';
-import GalleryManager from './pages/admin/GalleryManager';
 import { requireAdmin } from './lib/auth';
 
 // Composant pour remonter en haut de la page lors des changements de route
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
-
+  
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
+  
   return null;
 };
 
@@ -59,7 +57,6 @@ function App() {
             <Route path="blog" element={<BlogManager />} />
             <Route path="comments" element={<CommentManager />} />
             <Route path="videos" element={<VideoManager />} />
-            <Route path="gallery" element={<GalleryManager />} />
             <Route path="products" element={<ProductsManager />} />
             <Route path="orders" element={<OrdersManager />} />
             <Route path="bookings" element={<BookingsManager />} />
@@ -79,7 +76,6 @@ function App() {
                   <Route path="/services" element={<ServicesPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/booking" element={<BookingPage />} />
-                  <Route path="/gallery" element={<Gallery />} />
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogArticle />} />
                   <Route path="/shop" element={<ShopPage />} />

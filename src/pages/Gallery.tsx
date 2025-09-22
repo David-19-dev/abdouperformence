@@ -1,117 +1,71 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Play, Image, Filter, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Image, Filter, ChevronRight, Calendar, User, Tag } from 'lucide-react';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface GalleryItem {
-  id: number;
-  src: string;
-  alt: string;
-  category: string;
+  id: string;
+  title: string;
+  description: string;
+  image_url: string;
   type: 'image' | 'video';
-  videoUrl?: string;
-  thumbnail?: string;
+  video_url?: string;
+  category: string;
+  author: string;
+  published_at: string;
+  featured: boolean;
+  tags: string[];
 }
-
-const galleryItems: GalleryItem[] = [
-  {
-    id: 1,
-    src: 'https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&cs=tinysrgb&w=600',
-    alt: 'Séance de coaching personnel',
-    category: 'training',
-    type: 'image'
-  },
-  {
-    id: 2,
-    src: 'https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&w=600',
-    alt: 'Cours collectif',
-    category: 'classes',
-    type: 'image'
-  },
-  {
-    id: 3,
-    src: '',
-    alt: 'Technique de squat',
-    category: 'training',
-    type: 'video',
-    videoUrl: 'https://player.vimeo.com/video/174002812',
-    thumbnail: 'https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg?auto=compress&cs=tinysrgb&w=600'
-  },
-  {
-    id: 4,
-    src: 'https://images.pexels.com/photos/2261485/pexels-photo-2261485.jpeg?auto=compress&cs=tinysrgb&w=600',
-    alt: 'Coaching performance sportive',
-    category: 'performance',
-    type: 'image'
-  },
-  {
-    id: 5,
-    src: '',
-    alt: 'Techniques de course',
-    category: 'performance',
-    type: 'video',
-    videoUrl: 'https://player.vimeo.com/video/183849543',
-    thumbnail: 'https://images.pexels.com/photos/136405/pexels-photo-136405.jpeg?auto=compress&cs=tinysrgb&w=600'
-  },
-  {
-    id: 6,
-    src: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=600',
-    alt: 'Coaching nutritionnel',
-    category: 'nutrition',
-    type: 'image'
-  },
-  {
-    id: 7,
-    src: '',
-    alt: 'Préparation de repas fitness',
-    category: 'nutrition',
-    type: 'video',
-    videoUrl: 'https://player.vimeo.com/video/166807261',
-    thumbnail: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=600'
-  },
-  {
-    id: 8,
-    src: 'https://images.pexels.com/photos/2294354/pexels-photo-2294354.jpeg?auto=compress&cs=tinysrgb&w=600',
-    alt: 'Entraînement en plein air',
-    category: 'outdoor',
-    type: 'image'
-  },
-  {
-    id: 9,
-    src: 'https://images.pexels.com/photos/4162449/pexels-photo-4162449.jpeg?auto=compress&cs=tinysrgb&w=600',
-    alt: 'Équipement fitness',
-    category: 'equipment',
-    type: 'image'
-  }
-];
 
 const categories = [
   { id: 'tous', label: 'Tous', icon: '🏋️‍♂️' },
-  { id: 'training', label: 'Entraînement', icon: '💪' },
-  { id: 'classes', label: 'Cours', icon: '👥' },
-  { id: 'performance', label: 'Performance', icon: '🏆' },
-  { id: 'nutrition', label: 'Nutrition', icon: '🥗' },
-  { id: 'outdoor', label: 'Plein air', icon: '🌳' },
-  { id: 'equipment', label: 'Équipement', icon: '⚙️' },
+  { id: 'Entraînement', label: 'Entraînement', icon: '💪' },
+  { id: 'Cours collectifs', label: 'Cours', icon: '👥' },
+  { id: 'Performance', label: 'Performance', icon: '🏆' },
+  { id: 'Nutrition', label: 'Nutrition', icon: '🥗' },
+  { id: 'Plein air', label: 'Plein air', icon: '🌳' },
+  { id: 'Équipement', label: 'Équipement', icon: '⚙️' },
+  { id: 'Transformations', label: 'Transformations', icon: '🔄' },
+  { id: 'Événements', label: 'Événements', icon: '🎉' },
+  { id: 'Technique', label: 'Technique', icon: '🎯' },
+  { id: 'Motivation', label: 'Motivation', icon: '🔥' },
   { id: 'video', label: 'Vidéos', icon: '🎬' }
 ];
 
 const Gallery: React.FC = () => {
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('tous');
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('masonry');
 
-  // Simuler un chargement pour l'effet visuel
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    fetchGalleryItems();
   }, []);
-  
-  const filteredItems = activeCategory === 'tous' 
-    ? galleryItems 
+
+  const fetchGalleryItems = async () => {
+    try {
+      setIsLoading(true);
+      const galleryCollection = collection(db, 'gallery');
+      const galleryQuery = query(galleryCollection, orderBy('created_at', 'desc'));
+      const gallerySnapshot = await getDocs(galleryQuery);
+      const galleryData = gallerySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as GalleryItem[];
+      setGalleryItems(galleryData);
+    } catch (error) {
+      console.error('Error fetching gallery items:', error);
+      // Fallback to static data if Firebase fails
+      setGalleryItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredItems = activeCategory === 'tous'
+    ? galleryItems
     : activeCategory === 'video'
     ? galleryItems.filter(item => item.type === 'video')
     : galleryItems.filter(item => item.category === activeCategory);
@@ -119,19 +73,17 @@ const Gallery: React.FC = () => {
   const openModal = (item: GalleryItem) => {
     setSelectedItem(item);
     setIsModalOpen(true);
-    // Désactiver le scroll quand la modal est ouverte
     document.body.style.overflow = 'hidden';
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedItem(null);
-    // Réactiver le scroll
     document.body.style.overflow = '';
   };
 
   // Fermer la modal avec la touche Escape
-  React.useEffect(() => {
+  useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         closeModal();
@@ -142,6 +94,46 @@ const Gallery: React.FC = () => {
       window.removeEventListener('keydown', handleEsc);
     };
   }, []);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getVideoId = (url: string) => {
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    if (url.includes('vimeo.com')) {
+      const regExp = /vimeo\.com\/([0-9]+)/;
+      const match = url.match(regExp);
+      return match ? match[1] : null;
+    }
+
+    return null;
+  };
+
+  const getEmbedUrl = (url: string) => {
+    const videoId = getVideoId(url);
+
+    if (!videoId) return url;
+
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    if (url.includes('vimeo.com')) {
+      return `https://player.vimeo.com/video/${videoId}`;
+    }
+
+    return url;
+  };
 
   return (
     <section id="gallery" className="py-16 bg-gray-50">
@@ -158,7 +150,7 @@ const Gallery: React.FC = () => {
             Découvrez notre environnement d'entraînement, nos équipements et les transformations de nos clients.
           </p>
         </div>
-        
+
         {/* Contrôles et filtres */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 animate-fade-in-delay">
           <div className="flex flex-wrap justify-center gap-2 mb-4 md:mb-0">
@@ -177,7 +169,7 @@ const Gallery: React.FC = () => {
               </button>
             ))}
           </div>
-          
+
           <div className="flex bg-white rounded-lg shadow-sm p-1 border border-gray-200">
             <button
               onClick={() => setViewMode('grid')}
@@ -209,41 +201,41 @@ const Gallery: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         {/* Loader */}
         {isLoading && (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
           </div>
         )}
-        
+
         {/* Galerie */}
         {!isLoading && (
           <div className={`${
-            viewMode === 'grid' 
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' 
-              : 'columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6'
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+              : 'columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6'
           }`}>
             {filteredItems.map((item) => (
               <div
                 key={item.id}
-                className={`group relative overflow-hidden rounded-lg shadow-md transform transition-all duration-300 hover:shadow-xl ${
+                className={`group relative overflow-hidden rounded-lg shadow-md transform transition-all duration-300 hover:shadow-xl cursor-pointer ${
                   viewMode === 'grid' ? 'h-64' : 'break-inside-avoid mb-6'
                 }`}
                 onClick={() => openModal(item)}
               >
                 {item.type === 'image' ? (
                   <img
-                    src={item.src}
-                    alt={item.alt}
+                    src={item.image_url}
+                    alt={item.title}
                     className="h-full w-full object-cover transform transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
                   />
                 ) : (
                   <div className="relative h-64 w-full">
                     <img
-                      src={item.thumbnail}
-                      alt={item.alt}
+                      src={item.image_url}
+                      alt={item.title}
                       className="h-full w-full object-cover transform transition-transform duration-500 group-hover:scale-110"
                       loading="lazy"
                     />
@@ -254,26 +246,41 @@ const Gallery: React.FC = () => {
                     </div>
                   </div>
                 )}
+                {item.featured && (
+                  <div className="absolute top-3 left-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-medium">
+                    À la une
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                   <div className="p-4">
-                    <p className="text-white font-medium">{item.alt}</p>
-                    <div className="flex items-center mt-2">
-                      {item.type === 'image' ? (
-                        <Image className="h-4 w-4 text-red-300 mr-2" />
-                      ) : (
-                        <Play className="h-4 w-4 text-red-300 mr-2" />
-                      )}
-                      <p className="text-red-300 text-sm capitalize">
-                        {categories.find(cat => cat.id === item.category)?.label || item.category}
-                      </p>
+                    <p className="text-white font-medium mb-1">{item.title}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-red-300 text-sm">
+                        {item.type === 'image' ? (
+                          <Image className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Play className="h-4 w-4 mr-2" />
+                        )}
+                        <span>{item.category}</span>
+                      </div>
+                      <span className="text-red-300 text-xs">{formatDate(item.published_at)}</span>
                     </div>
+                    {item.tags && item.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {item.tags.slice(0, 2).map((tag, index) => (
+                          <span key={index} className="text-xs bg-red-600/20 text-red-300 px-2 py-1 rounded">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-        
+
         {/* Message si aucun résultat */}
         {!isLoading && filteredItems.length === 0 && (
           <div className="text-center py-16">
@@ -288,47 +295,80 @@ const Gallery: React.FC = () => {
             </button>
           </div>
         )}
-        
+
         {/* CTA */}
         <div className="mt-16 text-center">
-          <Link 
-            to="/contact" 
-            className="inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Contactez-nous pour une séance photo/vidéo
+          <div className="inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors cursor-pointer">
+            <span>Contactez-nous pour une séance photo/vidéo</span>
             <ChevronRight className="ml-2 h-5 w-5" />
-          </Link>
+          </div>
         </div>
       </div>
-      
+
       {/* Modal pour afficher les éléments en grand */}
       {isModalOpen && selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80" onClick={closeModal}>
-          <div 
-            className="max-w-4xl w-full bg-white rounded-xl overflow-hidden shadow-2xl" 
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={closeModal}>
+          <div
+            className="max-w-5xl w-full bg-white rounded-xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {selectedItem.type === 'image' ? (
-              <img 
-                src={selectedItem.src} 
-                alt={selectedItem.alt} 
-                className="w-full h-auto max-h-[80vh] object-contain"
-              />
-            ) : (
-              <div className="relative pb-[56.25%] h-0">
-                <iframe 
-                  src={`${selectedItem.videoUrl}?autoplay=1&title=0&byline=0&portrait=0`} 
-                  className="absolute top-0 left-0 w-full h-full" 
-                  allow="autoplay; fullscreen; picture-in-picture" 
-                  allowFullScreen
-                ></iframe>
-              </div>
-            )}
+            <div className="relative">
+              {selectedItem.type === 'image' ? (
+                <img
+                  src={selectedItem.image_url}
+                  alt={selectedItem.title}
+                  className="w-full h-auto max-h-[70vh] object-contain"
+                />
+              ) : (
+                <div className="relative pb-[56.25%] h-0">
+                  <iframe
+                    src={`${getEmbedUrl(selectedItem.video_url || '')}?autoplay=1&title=0&byline=0&portrait=0`}
+                    className="absolute top-0 left-0 w-full h-full"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              )}
+              <button
+                onClick={closeModal}
+                className="absolute top-4 right-4 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                <span className="text-xl">×</span>
+              </button>
+            </div>
             <div className="p-6">
-              <h3 className="text-xl font-bold mb-2">{selectedItem.alt}</h3>
-              <p className="text-gray-600">
-                Catégorie: {categories.find(cat => cat.id === selectedItem.category)?.label || selectedItem.category}
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">{selectedItem.title}</h3>
+                {selectedItem.featured && (
+                  <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
+                    À la une
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-600 mb-4">{selectedItem.description}</p>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <Tag className="h-4 w-4 mr-1" />
+                  <span>{selectedItem.category}</span>
+                </div>
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-1" />
+                  <span>{selectedItem.author}</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>{formatDate(selectedItem.published_at)}</span>
+                </div>
+              </div>
+              {selectedItem.tags && selectedItem.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {selectedItem.tags.map((tag, index) => (
+                    <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
