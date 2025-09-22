@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, User, Share2, Heart, MessageCircle, Facebook, Twitter, Linkedin, Copy, CheckCircle } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getBlogPosts } from '../lib/firestore';
+import { getBlogPosts, getBlogPostBySlug } from '../lib/firestore';
 
 const BlogArticle: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -28,21 +28,16 @@ const BlogArticle: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const posts = await getBlogPosts();
+      const found = await getBlogPostBySlug(slug);
 
-      console.log('📋 All posts fetched:', posts.length);
-      console.log('📋 Posts data:', posts.map(p => ({ id: p.id, slug: (p as any).slug, title: (p as any).title })));
+      console.log('🎯 Found article:', found ? { id: (found as any).id, slug: (found as any).slug, title: (found as any).title } : 'NOT FOUND');
 
-      const foundArticle = posts.find((post: any) => post.slug === slug);
-
-      console.log('🎯 Found article:', foundArticle ? { id: foundArticle.id, slug: (foundArticle as any).slug, title: (foundArticle as any).title } : 'NOT FOUND');
-
-      if (foundArticle) {
-        setArticle(foundArticle);
+      if (found) {
+        setArticle(found);
         // Reset like state for new article
         setIsLiked(false);
         setLikes(247); // You might want to store this in Firestore too
-        console.log('✅ Article loaded successfully:', (foundArticle as any).title);
+        console.log('✅ Article loaded successfully:', (found as any).title);
       } else {
         console.log('❌ Article not found for slug:', slug);
         setError('Article non trouvé');
