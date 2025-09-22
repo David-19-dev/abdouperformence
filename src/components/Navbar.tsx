@@ -53,10 +53,11 @@ const Navbar: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="flex items-center">
-                <Dumbbell className={`h-8 w-8 ${scrolled || !isHomePage ? 'text-red-600' : 'text-white'} mr-2`} />
-                <span className={`font-bold text-xl ${scrolled || !isHomePage ? 'text-red-600' : 'text-white'} transition-colors duration-200`}>
-                  BBP Performance
-                </span>
+                <img
+                  src="images/logo.png"
+                  alt="BBP Performance Logo"
+                  className={`h-28 w-28 ${scrolled || !isHomePage ? '' : 'brightness-0 invert'} transition-all duration-200`}
+                />
               </Link>
             </div>
             
