@@ -178,6 +178,22 @@ export const getBlogPosts = async () => {
   }
 };
 
+// Récupérer un article par son slug
+export const getBlogPostBySlug = async (slug: string) => {
+  try {
+    const q = query(collection(db, 'blog_posts'), where('slug', '==', slug), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return null;
+    }
+    const docSnap = querySnapshot.docs[0];
+    return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+  } catch (error) {
+    console.error('❌ Erreur récupération article par slug:', error);
+    throw error;
+  }
+};
+
 export const updateBlogPost = async (id: string, updates: Partial<BlogPost>) => {
   try {
     const postRef = doc(db, 'blog_posts', id);

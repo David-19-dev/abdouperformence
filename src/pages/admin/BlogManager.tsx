@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, Plus, X, Calendar, Clock, Tag, User, Eye, ArrowRight } from 'lucide-react';
-import { getBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost as BlogPostType } from '../../lib/firestore';
+import { getBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, getBlogPostBySlug, BlogPost as BlogPostType } from '../../lib/firestore';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
@@ -97,14 +97,32 @@ const BlogManager: React.FC = () => {
     }));
   };
 
+  // Ensure unique slug by checking Firestore and appending -2, -3, ... if needed
+  const ensureUniqueSlug = async (baseSlug: string, excludeId?: string) => {
+    let candidate = baseSlug;
+    let suffix = 2;
+    while (true) {
+      const existing = await getBlogPostBySlug(candidate);
+      if (!existing || (excludeId && existing.id === excludeId)) {
+        return candidate;
+      }
+      candidate = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       setLoading(true);
-      
+      // Validate/normalize slug and ensure uniqueness
+      const baseSlug = generateSlug(formData.slug || formData.title || 'article');
+      const uniqueSlug = await ensureUniqueSlug(baseSlug, currentPost?.id);
+
       const postData = {
         ...formData,
+        slug: uniqueSlug,
         publishedAt: currentPost?.publishedAt || Timestamp.now()
       };
 

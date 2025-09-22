@@ -11,6 +11,7 @@ const Hero: React.FC = () => {
 
   return (
     <section id="home" className="relative min-h-screen flex items-center">
+<<<<<<< HEAD
       <div className="absolute inset-0 z-0">
         <video
           className="absolute inset-0 w-full h-full object-cover"
@@ -22,6 +23,17 @@ const Hero: React.FC = () => {
           <source src="videos/video.mp4" type="video/mp4" />
           Votre navigateur ne supporte pas la lecture de vidéos.
         </video>
+=======
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url('/cover.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+>>>>>>> a5f1271d6acb73901a6aa69c838ba1961a7b8ad5
         <div className="absolute inset-0 bg-black opacity-60"></div>
       </div>
       
