@@ -64,17 +64,15 @@ const Navbar: React.FC = () => {
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-6">
                 {navItems.map((item) => (
-                  item.name !== 'Galerie' && (
-                    <Link
-                      key={item.name}
-                      to={item.href.replace('#', '')}
-                      className={`${
-                        scrolled || !isHomePage ? 'text-gray-700 hover:text-red-600' : 'text-gray-100 hover:text-white'
-                      } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
-                    >
-                      {item.name}
-                    </Link>
-                  )
+                  <Link
+                    key={item.name}
+                    to={item.href.replace('#', '')}
+                    className={`${
+                      scrolled || !isHomePage ? 'text-gray-700 hover:text-red-600' : 'text-gray-100 hover:text-white'
+                    } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                  >
+                    {item.name}
+                  </Link>
                 ))}
                 <button
                   onClick={() => setIsCartOpen(true)}
@@ -139,19 +137,17 @@ const Navbar: React.FC = () => {
         <div className={`md:hidden fixed inset-0 z-40 bg-white transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ top: '64px' }}>
           <div className="px-4 pt-4 pb-6 space-y-3 h-full overflow-y-auto">
             {navItems.map((item) => (
-              item.name !== 'Galerie' && (
-                <Link
-                  key={item.name}
-                  to={item.href.replace('#', '')}
-                  className="text-gray-700 hover:text-red-600 block px-3 py-4 rounded-md text-lg font-medium border-b border-gray-100"
-                  onClick={() => {
-                    setIsOpen(false);
-                    document.body.style.overflow = '';
-                  }}
-                >
-                  {item.name}
-                </Link>
-              )
+              <Link
+                key={item.name}
+                to={item.href.replace('#', '')}
+                className="text-gray-700 hover:text-red-600 block px-3 py-4 rounded-md text-lg font-medium border-b border-gray-100"
+                onClick={() => {
+                  setIsOpen(false);
+                  document.body.style.overflow = '';
+                }}
+              >
+                {item.name}
+              </Link>
             ))}
             <button
               onClick={() => {

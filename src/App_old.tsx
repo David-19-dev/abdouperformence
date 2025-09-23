@@ -16,31 +16,29 @@ import RamadanTrainingArticle from './pages/RamadanTrainingArticle';
 import OutdoorTrainingArticle from './pages/OutdoorTrainingArticle';
 import ShopPage from './pages/ShopPage';
 import BookingPage from './pages/BookingPage';
-import Gallery from './pages/Gallery_temp';
 import AdminLayout from './pages/admin/AdminLayout';
 import LoginPage from './pages/admin/LoginPage';
 import Dashboard from './pages/admin/Dashboard';
 import ManagementPage from './pages/admin/ManagementPage';
 import BlogManager from './pages/admin/BlogManager';
 import CommentManager from './pages/admin/CommentManager';
-import MediaManager from './pages/admin/MediaManager';
+import VideoManager from './pages/admin/VideoManager';
 import ProductsManager from './pages/admin/ProductsManager';
 import OrdersManager from './pages/admin/OrdersManager';
 import BookingsManager from './pages/admin/BookingsManager';
 import UsersManager from './pages/admin/UsersManager';
 import SettingsPage from './pages/admin/SettingsPage';
 import SetupPage from './pages/admin/SetupPage';
-import GalleryManager from './pages/admin/GalleryManager';
 import { requireAdmin } from './lib/auth';
 
 // Composant pour remonter en haut de la page lors des changements de route
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
-
+  
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
+  
   return null;
 };
 
@@ -58,8 +56,7 @@ function App() {
             <Route path="management" element={<ManagementPage />} />
             <Route path="blog" element={<BlogManager />} />
             <Route path="comments" element={<CommentManager />} />
-            <Route path="videos" element={<MediaManager />} />
-            <Route path="gallery" element={<GalleryManager />} />
+            <Route path="videos" element={<VideoManager />} />
             <Route path="products" element={<ProductsManager />} />
             <Route path="orders" element={<OrdersManager />} />
             <Route path="bookings" element={<BookingsManager />} />
@@ -79,7 +76,6 @@ function App() {
                   <Route path="/services" element={<ServicesPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/booking" element={<BookingPage />} />
-                  <Route path="/gallery" element={<Gallery />} />
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogArticle />} />
                   <Route path="/shop" element={<ShopPage />} />

@@ -40,7 +40,7 @@ const AdminLayout: React.FC = () => {
     { name: 'Gestion', href: '/admin/management', icon: Calendar },
     { name: 'Blog', href: '/admin/blog', icon: FileText },
     { name: 'Commentaires', href: '/admin/comments', icon: MessageSquare },
-    { name: 'Médias', href: '/admin/videos', icon: Video },
+    { name: 'Vidéos', href: '/admin/videos', icon: Video },
     { name: 'Produits', href: '/admin/products', icon: Package },
     { name: 'Commandes', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Réservations', href: '/admin/bookings', icon: BookOpen },
@@ -55,7 +55,7 @@ const AdminLayout: React.FC = () => {
         <div className="flex h-16 items-center justify-center border-b border-gray-800">
           <h1 className="text-xl font-bold text-white">BBP Admin</h1>
         </div>
-
+        
         <nav className="mt-6">
           <div className="space-y-1 px-2">
             {navigation.map((item) => {
@@ -101,4 +101,4 @@ const AdminLayout: React.FC = () => {
   );
 };
 
-export default AdminLayout;
+export default AdminLayout

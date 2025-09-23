@@ -32,7 +32,7 @@ const About = () => {
           <div className="w-full md:w-1/2 relative">
             <div className="relative z-10">
               <img 
-                src="https://images.pexels.com/photos/4498294/pexels-photo-4498294.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+                src="images/cov1.jpg" 
                 alt="Coach de fitness" 
                 className="rounded-lg shadow-xl object-cover w-full h-[600px]"
               />

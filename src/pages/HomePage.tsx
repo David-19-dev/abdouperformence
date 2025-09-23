@@ -115,7 +115,7 @@ const HomePage = () => {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
               <img 
-                src="https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                src="images/cov.jpg"
                 alt="Transformation fitness"
                 className="rounded-lg shadow-xl object-cover w-full h-[400px]"
               />
