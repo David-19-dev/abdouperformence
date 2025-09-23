@@ -16,14 +16,14 @@ import RamadanTrainingArticle from './pages/RamadanTrainingArticle';
 import OutdoorTrainingArticle from './pages/OutdoorTrainingArticle';
 import ShopPage from './pages/ShopPage';
 import BookingPage from './pages/BookingPage';
-import Gallery from './pages/Gallery';
+import Gallery from './pages/Gallery_temp';
 import AdminLayout from './pages/admin/AdminLayout';
 import LoginPage from './pages/admin/LoginPage';
 import Dashboard from './pages/admin/Dashboard';
 import ManagementPage from './pages/admin/ManagementPage';
 import BlogManager from './pages/admin/BlogManager';
 import CommentManager from './pages/admin/CommentManager';
-import VideoManager from './pages/admin/VideoManager';
+import MediaManager from './pages/admin/MediaManager';
 import ProductsManager from './pages/admin/ProductsManager';
 import OrdersManager from './pages/admin/OrdersManager';
 import BookingsManager from './pages/admin/BookingsManager';
@@ -58,7 +58,7 @@ function App() {
             <Route path="management" element={<ManagementPage />} />
             <Route path="blog" element={<BlogManager />} />
             <Route path="comments" element={<CommentManager />} />
-            <Route path="videos" element={<VideoManager />} />
+            <Route path="videos" element={<MediaManager />} />
             <Route path="gallery" element={<GalleryManager />} />
             <Route path="products" element={<ProductsManager />} />
             <Route path="orders" element={<OrdersManager />} />

@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permettre la lecture de la collection gallery pour tout le monde
+    match /gallery/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Règles pour les utilisateurs (accès basé sur le rôle)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Règles pour les réservations
+    match /bookings/{bookingId} {
+      allow create: if true; // Permet aux utilisateurs anonymes de créer des réservations
+      allow read, update, delete: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Règles pour les autres collections (admin uniquement)
+    match /{document=**} {
+      allow read, write: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{"users": [
+{
+  "localId": "dZdQFmvJm5W5YeehsOb2QMMvhA23",
+  "email": "admin@bambaperformance.com",
+  "emailVerified": false,
+  "passwordHash": "G7bEtU3Hu8aFVUsvXXYiftaxebZ7mHRLxVUfZVccnyp+pfsm7ylAKPUTx4EB0F/CtE4L1LcQee+Tl/IMQWek0Q==",
+  "salt": "gBw3nsCkVZddrA==",
+  "lastSignedInAt": "1758550635473",
+  "createdAt": "1752825998018",
+  "disabled": false,
+  "providerUserInfo": []
+}]}

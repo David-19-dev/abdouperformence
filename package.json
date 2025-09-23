@@ -16,6 +16,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^2.4.0",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.2",
     "firebase": "^11.10.0",
     "lucide-react": "^0.344.0",
     "moment": "^2.30.1",

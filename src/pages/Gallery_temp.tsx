@@ -18,6 +18,8 @@ interface GalleryItem {
   tags: string[];
 }
 
+
+
 const categories = [
   { id: 'tous', label: 'Tous', icon: '🏋️‍♂️' },
   { id: 'Entraînement', label: 'Entraînement', icon: '💪' },
@@ -49,7 +51,7 @@ const Gallery: React.FC = () => {
   const fetchGalleryItems = async () => {
     try {
       setIsLoading(true);
-      console.log('🔄 Chargement des éléments de la galerie...');
+      console.log('🔄 Chargement des éléments de la galerie depuis Firestore...');
 
       const galleryCollection = collection(db, 'gallery');
       const galleryQuery = query(galleryCollection, orderBy('created_at', 'desc'));
@@ -60,11 +62,16 @@ const Gallery: React.FC = () => {
         ...doc.data()
       })) as GalleryItem[];
 
-      console.log('✅ Éléments de galerie chargés:', galleryData.length);
-      setGalleryItems(galleryData);
+      if (galleryData.length > 0) {
+        console.log('✅ Éléments de galerie chargés depuis Firestore:', galleryData.length);
+        setGalleryItems(galleryData);
+      } else {
+        console.log('⚠️ Aucun élément trouvé dans Firestore');
+        setGalleryItems([]);
+      }
+
     } catch (error) {
       console.error('❌ Erreur lors du chargement de la galerie:', error);
-      // Fallback to static data if Firebase fails
       setGalleryItems([]);
     } finally {
       setIsLoading(false);

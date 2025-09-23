@@ -1,16 +1,15 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, collection } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBFEApsjCdy_t-_WFrxf-vRX96XQmvmW08",
-  authDomain: "bbp-performence.firebaseapp.com",
-  projectId: "bbp-performence",
-  storageBucket: "bbp-performence.firebasestorage.app",
-  messagingSenderId: "78469752392",
-  appId: "1:78469752392:web:e5c36dffdf2553359a1a7d",
-  measurementId: "G-3J4JBVM0PF"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialiser Firebase
@@ -28,7 +27,7 @@ export default app;
 export const checkFirebaseConnection = async () => {
   try {
     // Test simple de connexion à Firestore
-    await db._delegate._databaseId;
+    const testCollection = collection(db, '_test_connection');
     console.log('🔥 Connexion Firebase établie avec succès');
     return true;
   } catch (error) {

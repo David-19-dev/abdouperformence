@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Package, ShoppingBag, Users, BarChart2, Settings, LogOut, Calendar, FileText, Video, Database, BookOpen, MessageSquare, Image } from 'lucide-react';
+import { Package, ShoppingBag, Users, BarChart2, Settings, LogOut, Calendar, FileText, Video, Database, BookOpen, MessageSquare } from 'lucide-react';
 import { isAdmin, signOut } from '../../lib/auth';
 import toast from 'react-hot-toast';
 
@@ -40,8 +40,7 @@ const AdminLayout: React.FC = () => {
     { name: 'Gestion', href: '/admin/management', icon: Calendar },
     { name: 'Blog', href: '/admin/blog', icon: FileText },
     { name: 'Commentaires', href: '/admin/comments', icon: MessageSquare },
-    { name: 'Vidéos', href: '/admin/videos', icon: Video },
-    { name: 'Galerie', href: '/admin/gallery', icon: Image },
+    { name: 'Médias', href: '/admin/videos', icon: Video },
     { name: 'Produits', href: '/admin/products', icon: Package },
     { name: 'Commandes', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Réservations', href: '/admin/bookings', icon: BookOpen },

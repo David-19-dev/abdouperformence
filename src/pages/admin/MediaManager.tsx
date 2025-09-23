@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Plus, X, Calendar, Play, Image, Tag, Eye, Upload } from 'lucide-react';
+import { Search, Edit, Trash2, Plus, X, Calendar, Play, Image, Tag, User, Eye, Upload } from 'lucide-react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import toast from 'react-hot-toast';
 
-interface GalleryItem {
+interface MediaItem {
   id: string;
   title: string;
   description: string;
@@ -18,11 +18,11 @@ interface GalleryItem {
   tags: string[];
 }
 
-const GalleryManager: React.FC = () => {
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+const MediaManager: React.FC = () => {
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentItem, setCurrentItem] = useState<GalleryItem | null>(null);
+  const [currentItem, setCurrentItem] = useState<MediaItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
@@ -37,25 +37,116 @@ const GalleryManager: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchGalleryItems();
+    fetchMediaItems();
   }, []);
 
-  const fetchGalleryItems = async () => {
+  const fetchMediaItems = async () => {
     try {
       setLoading(true);
-      const galleryCollection = collection(db, 'gallery');
-      const gallerySnapshot = await getDocs(galleryCollection);
-      const galleryData = gallerySnapshot.docs.map(doc => ({
+      console.log('🔄 Chargement des éléments média depuis Firestore...');
+
+      const mediaCollection = collection(db, 'gallery');
+      const mediaSnapshot = await getDocs(mediaCollection);
+      const mediaData = mediaSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as GalleryItem[];
-      setGalleryItems(galleryData);
+      })) as MediaItem[];
+
+      if (mediaData.length > 0) {
+        console.log('✅ Éléments média chargés depuis Firestore:', mediaData.length);
+        setMediaItems(mediaData);
+      } else {
+        console.log('⚠️ Aucun élément trouvé dans Firestore, ajout d\'éléments de test');
+        // Ajouter des éléments de test dans Firestore
+        await addTestMediaItems();
+        // Recharger après l'ajout
+        const newSnapshot = await getDocs(mediaCollection);
+        const newMediaData = newSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as MediaItem[];
+        setMediaItems(newMediaData);
+      }
+
     } catch (error) {
-      console.error('Error fetching gallery items:', error);
-      toast.error('Erreur lors du chargement de la galerie');
+      console.error('❌ Erreur lors du chargement des médias:', error);
+      toast.error('Erreur lors du chargement des médias');
     } finally {
       setLoading(false);
     }
+  };
+
+  const addTestMediaItems = async () => {
+    try {
+      console.log('🔄 Ajout d\'éléments de test dans Firestore...');
+      const testItems = getTestMediaItems();
+
+      for (const item of testItems) {
+        const { id, ...itemData } = item;
+        await addDoc(collection(db, 'gallery'), itemData);
+      }
+
+      console.log('✅ Éléments de test ajoutés avec succès');
+      toast.success('Éléments de test ajoutés');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'ajout des éléments de test:', error);
+      toast.error('Erreur lors de l\'ajout des éléments de test');
+    }
+  };
+
+  const getTestMediaItems = (): MediaItem[] => {
+    return [
+      {
+        id: 'test-1',
+        title: 'Séance de coaching personnel',
+        description: 'Découvrez nos méthodes d\'entraînement personnalisé avec Coach Ibrahim',
+        image_url: 'https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&cs=tinysrgb&w=600',
+        type: 'image',
+        category: 'Entraînement',
+        author: 'Coach Ibrahim',
+        published_at: new Date().toISOString(),
+        featured: true,
+        tags: ['coaching', 'personnel', 'fitness']
+      },
+      {
+        id: 'test-2',
+        title: 'Technique de squat parfaite',
+        description: 'Apprenez la technique idéale pour des squats efficaces et sécuritaires',
+        image_url: 'https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg?auto=compress&cs=tinysrgb&w=600',
+        type: 'video',
+        video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        category: 'Technique',
+        author: 'Coach Ibrahim',
+        published_at: new Date().toISOString(),
+        featured: false,
+        tags: ['squat', 'technique', 'musculation']
+      },
+      {
+        id: 'test-3',
+        title: 'Cours collectif dynamique',
+        description: 'Rejoignez nos cours collectifs pour une motivation maximale',
+        image_url: 'https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&w=600',
+        type: 'image',
+        category: 'Cours collectifs',
+        author: 'Coach Ibrahim',
+        published_at: new Date().toISOString(),
+        featured: false,
+        tags: ['collectif', 'motivation', 'groupe']
+      },
+      {
+        id: 'test-4',
+        title: 'Préparation de repas fitness',
+        description: 'Découvrez nos conseils nutrition pour optimiser vos performances',
+        image_url: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=600',
+        type: 'video',
+        video_url: 'https://vimeo.com/174002812',
+        category: 'Nutrition',
+        author: 'Coach Ibrahim',
+        published_at: new Date().toISOString(),
+        featured: false,
+        tags: ['nutrition', 'repas', 'fitness']
+      }
+    ];
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -90,7 +181,7 @@ const GalleryManager: React.FC = () => {
     try {
       setLoading(true);
 
-      const itemData = {
+      const mediaData = {
         ...formData,
         published_at: currentItem?.published_at || new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -98,13 +189,18 @@ const GalleryManager: React.FC = () => {
       };
 
       if (currentItem) {
-        const itemRef = doc(db, 'gallery', currentItem.id);
-        await updateDoc(itemRef, itemData);
-        toast.success('Élément de galerie mis à jour avec succès');
+        // Mise à jour dans Firestore
+        const docRef = doc(db, 'gallery', currentItem.id);
+        await updateDoc(docRef, mediaData);
+        toast.success('Média mis à jour avec succès');
       } else {
-        await addDoc(collection(db, 'gallery'), itemData);
-        toast.success('Élément de galerie créé avec succès');
+        // Ajout dans Firestore
+        await addDoc(collection(db, 'gallery'), mediaData);
+        toast.success('Média créé avec succès');
       }
+
+      // Recharger les données
+      await fetchMediaItems();
 
       setIsModalOpen(false);
       setCurrentItem(null);
@@ -119,16 +215,15 @@ const GalleryManager: React.FC = () => {
         featured: false,
         tags: []
       });
-      fetchGalleryItems();
     } catch (error) {
-      console.error('Error saving gallery item:', error);
-      toast.error('Erreur lors de l\'enregistrement de l\'élément');
+      console.error('Error saving media:', error);
+      toast.error('Erreur lors de l\'enregistrement du média');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (item: GalleryItem) => {
+  const handleEdit = (item: MediaItem) => {
     setCurrentItem(item);
     setFormData({
       title: item.title,
@@ -147,42 +242,43 @@ const GalleryManager: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
       try {
-        await deleteDoc(doc(db, 'gallery', id));
-        toast.success('Élément supprimé avec succès');
-        fetchGalleryItems();
+        // Suppression dans Firestore
+        const docRef = doc(db, 'gallery', id);
+        await deleteDoc(docRef);
+
+        // Recharger les données
+        await fetchMediaItems();
+
+        toast.success('Média supprimé avec succès');
       } catch (error) {
-        console.error('Error deleting gallery item:', error);
-        toast.error('Erreur lors de la suppression de l\'élément');
+        console.error('Error deleting media:', error);
+        toast.error('Erreur lors de la suppression du média');
       }
     }
   };
 
-  const filteredItems = galleryItems.filter(item =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
-  );
+  const filteredItems = mediaItems.filter(item => {
+    const matchesSearch = searchTerm === '' ||
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
+
+    return matchesSearch;
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
 
   const categories = [
-    'Entraînement',
-    'Cours collectifs',
-    'Performance',
-    'Nutrition',
-    'Plein air',
-    'Équipement',
-    'Transformations',
-    'Événements',
-    'Technique',
-    'Motivation'
+    'Entraînement', 'Cours collectifs', 'Performance', 'Nutrition',
+    'Plein air', 'Équipement', 'Transformations', 'Événements',
+    'Technique', 'Motivation'
   ];
 
   const getVideoId = (url: string) => {
@@ -199,7 +295,6 @@ const GalleryManager: React.FC = () => {
     }
 
     if (url.includes('drive.google.com')) {
-      // Support Google Drive - extract file ID from various Google Drive URL formats
       const regExp = /(?:\/file\/d\/|\/open\?id=)([a-zA-Z0-9-_]+)/;
       const match = url.match(regExp);
       return match ? match[1] : null;
@@ -231,7 +326,7 @@ const GalleryManager: React.FC = () => {
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion de la Galerie</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Gestion des Médias</h1>
         <button
           onClick={() => {
             setCurrentItem(null);
@@ -251,7 +346,7 @@ const GalleryManager: React.FC = () => {
           className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
           <Plus className="h-5 w-5 mr-2" />
-          Nouvel élément
+          Nouveau Média
         </button>
       </div>
 
@@ -261,7 +356,7 @@ const GalleryManager: React.FC = () => {
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Rechercher dans la galerie..."
+                placeholder="Rechercher un média..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg"
@@ -273,15 +368,16 @@ const GalleryManager: React.FC = () => {
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+              <span className="ml-3 text-gray-600">Chargement des médias...</span>
             </div>
           ) : (
             <>
               {filteredItems.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Aucun élément trouvé dans la galerie</p>
+                  <p className="text-gray-500">Aucun média trouvé</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredItems.map((item) => (
                     <div key={item.id} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       <div className="relative h-48">
@@ -292,7 +388,7 @@ const GalleryManager: React.FC = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <>
+                          <div className="relative h-full">
                             <img
                               src={item.image_url}
                               alt={item.title}
@@ -303,22 +399,18 @@ const GalleryManager: React.FC = () => {
                                 <Play className="h-6 w-6 text-white" />
                               </div>
                             </div>
-                          </>
+                          </div>
                         )}
                         {item.featured && (
                           <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
                             À la une
                           </div>
                         )}
-                        <div className="absolute top-2 right-2 flex space-x-1">
+                        <div className="absolute top-2 right-2">
                           {item.type === 'image' ? (
-                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                              <Image className="h-3 w-3 text-white" />
-                            </div>
+                            <Image className="h-5 w-5 bg-black/50 text-white rounded p-1" />
                           ) : (
-                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-                              <Play className="h-3 w-3 text-white" />
-                            </div>
+                            <Play className="h-5 w-5 bg-black/50 text-white rounded p-1" />
                           )}
                         </div>
                       </div>
@@ -329,25 +421,14 @@ const GalleryManager: React.FC = () => {
                           <Calendar className="h-3 w-3 mr-1" />
                           <span>{formatDate(item.published_at)}</span>
                         </div>
-                        <h3 className="font-bold text-sm mb-2 line-clamp-2">{item.title}</h3>
-                        <p className="text-gray-600 text-xs mb-3 line-clamp-2">{item.description}</p>
-                        {item.tags && item.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {item.tags.slice(0, 2).map((tag, index) => (
-                              <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                {tag}
-                              </span>
-                            ))}
-                            {item.tags.length > 2 && (
-                              <span className="text-xs text-gray-500">+{item.tags.length - 2}</span>
-                            )}
-                          </div>
-                        )}
+                        <h3 className="font-bold text-lg mb-2 line-clamp-2">{item.title}</h3>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-3">{item.description}</p>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center text-xs text-gray-500">
+                            <User className="h-3 w-3 mr-1" />
                             <span>{item.author}</span>
                           </div>
-                          <div className="flex space-x-1">
+                          <div className="flex space-x-2">
                             <button
                               onClick={() => handleEdit(item)}
                               className="p-1 text-blue-600 hover:text-blue-800"
@@ -360,16 +441,27 @@ const GalleryManager: React.FC = () => {
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
-                            <a
-                              href={item.type === 'video' ? (item.video_url || item.image_url) : item.image_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 text-green-600 hover:text-green-800"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </a>
+                            {item.type === 'video' && item.video_url && (
+                              <a
+                                href={item.video_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 text-green-600 hover:text-green-800"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </a>
+                            )}
                           </div>
                         </div>
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.tags.slice(0, 3).map((tag, index) => (
+                              <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -380,7 +472,7 @@ const GalleryManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal pour créer/éditer un élément */}
+      {/* Modal pour créer/éditer un média */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
@@ -389,7 +481,7 @@ const GalleryManager: React.FC = () => {
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold text-gray-900">
-                    {currentItem ? 'Modifier l\'élément' : 'Nouvel élément'}
+                    {currentItem ? 'Modifier le média' : 'Nouveau média'}
                   </h2>
                   <button
                     onClick={() => setIsModalOpen(false)}
@@ -400,35 +492,18 @@ const GalleryManager: React.FC = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Titre
-                      </label>
-                      <input
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded-lg"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Type
-                      </label>
-                      <select
-                        name="type"
-                        value={formData.type}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border rounded-lg"
-                        required
-                      >
-                        <option value="image">Image</option>
-                        <option value="video">Vidéo</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Titre
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border rounded-lg"
+                      required
+                    />
                   </div>
 
                   <div>
@@ -445,39 +520,51 @@ const GalleryManager: React.FC = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Type de média
+                    </label>
+                    <select
+                      name="type"
+                      value={formData.type}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border rounded-lg"
+                      required
+                    >
+                      <option value="image">Image</option>
+                      <option value="video">Vidéo</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      URL de l'image (miniature)
+                    </label>
+                    <input
+                      type="url"
+                      name="image_url"
+                      value={formData.image_url}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border rounded-lg"
+                      required
+                    />
+                  </div>
+
+                  {formData.type === 'video' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        URL de l'image {formData.type === 'video' ? '(Miniature)' : ''}
+                        URL de la vidéo (YouTube, Vimeo, Google Drive)
                       </label>
                       <input
                         type="url"
-                        name="image_url"
-                        value={formData.image_url}
+                        name="video_url"
+                        value={formData.video_url}
                         onChange={handleInputChange}
                         className="w-full p-3 border rounded-lg"
-                        required
+                        placeholder="https://www.youtube.com/watch?v=... ou https://vimeo.com/..."
                       />
                     </div>
-                    {formData.type === 'video' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          URL de la vidéo (YouTube ou Vimeo)
-                        </label>
-                        <input
-                          type="url"
-                          name="video_url"
-                          value={formData.video_url}
-                          onChange={handleInputChange}
-                          className="w-full p-3 border rounded-lg"
-                          required
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Format: https://www.youtube.com/watch?v=XXXX, https://vimeo.com/XXXX ou https://drive.google.com/file/d/XXXX
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -518,6 +605,7 @@ const GalleryManager: React.FC = () => {
                     </label>
                     <input
                       type="text"
+                      name="tags"
                       value={formData.tags.join(', ')}
                       onChange={handleTagsChange}
                       className="w-full p-3 border rounded-lg"
@@ -581,4 +669,4 @@ const GalleryManager: React.FC = () => {
   );
 };
 
-export default GalleryManager;
+export default MediaManager;
